@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { weekLabel } from '../utils';
 import TaskItem from './TaskItem';
 
-export default function WeekCard({ week, isCurrent, ...handlers }) {
+export default function WeekCard({ week, isCurrent, onAdd, ...handlers }) {
   const [open, setOpen] = useState(isCurrent);
   const done = week.tasks.filter((t) => t.status === 'Completed').length;
   const pct = Math.round((done / week.tasks.length) * 100);
@@ -28,6 +28,7 @@ export default function WeekCard({ week, isCurrent, ...handlers }) {
       {open && (
         <div className="mt-4 space-y-2">
           {week.tasks.map((t) => <TaskItem key={t._id} task={t} {...handlers} />)}
+          <button onClick={() => onAdd(week)} className="w-full rounded-xl border border-dashed border-indigo-300 py-2 text-sm font-medium text-indigo-600">+ Add task to this week</button>
         </div>
       )}
     </section>

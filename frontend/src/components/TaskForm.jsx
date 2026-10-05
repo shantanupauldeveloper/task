@@ -3,11 +3,11 @@ import { toInputValue } from '../utils';
 
 const field = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:bg-white';
 
-export default function TaskForm({ task, onSave, onClose }) {
+export default function TaskForm({ task, defaultDate, onSave, onDelete, onClose }) {
   const [f, setF] = useState({
     title: task?.title || '',
     description: task?.description || '',
-    dueAt: task ? toInputValue(task.dueAt) : toInputValue(new Date().toISOString()),
+    dueAt: task ? toInputValue(task.dueAt) : toInputValue((defaultDate || new Date()).toISOString()),
     priority: task?.priority || 'Medium',
   });
   const [error, setError] = useState('');
@@ -50,6 +50,7 @@ export default function TaskForm({ task, onSave, onClose }) {
           </div>
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {task && <button type="button" onClick={() => onDelete(task)} className="w-full rounded-xl bg-red-50 py-2.5 text-sm font-semibold text-red-600">Delete task</button>}
         <div className="flex gap-3">
           <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-gray-200 py-3 font-medium text-gray-600">Cancel</button>
           <button disabled={saving} className="flex-1 rounded-xl bg-indigo-600 py-3 font-semibold text-white disabled:opacity-60">{saving ? 'Saving…' : 'Save'}</button>

@@ -4,12 +4,14 @@ import { groupByWeek, weekStart } from './utils';
 import WeekCard from './components/WeekCard';
 import TaskItem from './components/TaskItem';
 import TaskForm from './components/TaskForm';
+import TaskDetail from './components/TaskDetail';
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [form, setForm] = useState(null); // null | {} (new) | task (edit)
+  const [detail, setDetail] = useState(null);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -37,11 +39,17 @@ export default function App() {
       setTasks((ts) => ts.map((x) => (x._id === t._id ? { ...x, status } : x))); // optimistic
       try { await updateTask(t._id, { status }); } catch (e) { setError(e.message); load(); }
     },
-    onEdit: setForm,
+    onEdit: (t) => { setDetail(null); setForm(t); },
     onDelete: async (t) => {
       setTasks((ts) => ts.filter((x) => x._id !== t._id));
       try { await deleteTask(t._id); } catch (e) { setError(e.message); load(); }
     },
+  };
+  const removeFromForm = (t) => { setForm(null); handlers.onDelete(t); };
+  // new task in a week: today if it's the current week, otherwise that week's Monday at 9:00
+  const addToWeek = (w) => {
+    const d = new Date(w.start); d.setHours(9, 0, 0, 0);
+    setForm({ defaultDate: w.key === currentKey ? new Date() : d });
   };
 
   const save = async (data) => {
@@ -77,13 +85,13 @@ export default function App() {
         {searching ? (
           query.trim() === '' ? <p className="py-16 text-center text-sm text-gray-400">Type to search by title or description</p>
           : results.length === 0 ? <p className="py-16 text-center text-sm text-gray-400">No tasks match “{query}”</p>
-          : results.map((t) => <TaskItem key={t._id} task={t} {...handlers} />)
+          : results.map((t) => <TaskItem key={t._id} task={t} {...handlers} onEdit={setDetail} />)
         ) : loading ? (
           <p className="py-16 text-center text-sm text-gray-400">Loading…</p>
         ) : weeks.length === 0 ? (
           <div className="py-20 text-center text-gray-400"><p className="text-4xl">📝</p><p className="mt-2">No tasks yet. Tap “Add Task” to start.</p></div>
         ) : (
-          weeks.map((w) => <WeekCard key={w.key} week={w} isCurrent={w.key === currentKey} {...handlers} />)
+          weeks.map((w) => <WeekCard key={w.key} week={w} isCurrent={w.key === currentKey} onAdd={addToWeek} {...handlers} />)
         )}
       </main>
 
@@ -91,7 +99,8 @@ export default function App() {
         <button onClick={() => setForm({})} className="w-full rounded-2xl bg-indigo-600 py-3.5 font-semibold text-white shadow-lg shadow-indigo-200 active:scale-[0.99]">+ Add Task</button>
       </div>
 
-      {form && <TaskForm task={form._id ? form : null} onSave={save} onClose={() => setForm(null)} />}
+      {form && <TaskForm task={form._id ? form : null} defaultDate={form.defaultDate} onSave={save} onDelete={removeFromForm} onClose={() => setForm(null)} />}
+      {detail && <TaskDetail task={detail} onClose={() => setDetail(null)} {...handlers} />}
     </div>
   );
 }
