@@ -1,0 +1,15 @@
+{
+  "name": "todo-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:api": "npm --prefix backend start",
+    "dev:web": "npm --prefix frontend run dev"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0",
+    "serverless-http": "^3.2.0"
+  }
+}
